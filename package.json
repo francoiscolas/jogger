@@ -1,0 +1,25 @@
+{
+    "name"       : "jogger",
+    "version"    : "1.0.0",
+    "author"     : "François Colas <francoiscolas@gmail.com>",
+    "description": "A Javascript logger.",
+    "keywords"   : [
+        "log",
+        "logger",
+        "console",
+        "debug",
+        "info",
+        "warning",
+        "error",
+        "color"
+    ],
+
+    "repository": {
+        "type": "git",
+        "url" : "https://github.com/francoiscolas/jogger.git"
+    },
+
+    "engines": {
+        "node": ">= 0.8.0"
+    }
+}
