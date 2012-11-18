@@ -33,16 +33,26 @@
         return root;
     };
 
+    var _format = (require && require('util') && require('util').format);
+
+    var _pad = function (string, width) {
+        var padded = '' + string;
+
+        while (padded.length < width)
+            padded = '0' + padded;
+        return padded;
+    };
+
     var Jogger = function (options) {
         var self = this;
 
         self.colorize = false;
+        self.outputs  = [];
         self.level    = Jogger.Level.d;
-        self._class   = Jogger;
 
-        if (typeof process !== 'undefined') // Running with Node.js
-        {
-            self.colorize = (process.stdout && process.stdout.isTTY);
+        if (typeof process !== 'undefined') {
+            self.colorize = process.stdout.isTTY;
+            self.outputs  = [process.stdout];
             self.level    = Jogger.Level.d;
 
             process.on('uncaughtException', function (error) {
@@ -68,6 +78,12 @@
         d   : 4
     };
 
+    Jogger.Color = {
+        e: 31,
+        w: 33,
+        i: 36
+    };
+
     Jogger.prototype = {
 
         e: function (tag, format/*, arguments*/) {
@@ -86,42 +102,46 @@
             this._write.apply(this, ['d'].concat(Array.prototype.slice.call(arguments, 0)))
         },
 
+        _now: function () {
+            var now = new Date();
+            return now.getFullYear() + '-' + _pad(now.getMonth(), 2) + '-' + _pad(now.getDate(), 2)
+                + ' ' + _pad(now.getHours(), 2) + ':' + _pad(now.getMinutes(), 2) + ':' + _pad(now.getSeconds(), 2) + '.' + _pad(now.getMilliseconds(), 3);
+        },
+
         _write: function (type, tag, format/*, arguments...*/) {
-            if (typeof console !== 'undefined'
-                    && this.level >= Jogger.Level[type])
-            {
-                var args = [Date.now() / 1000 + ' ' + type.toUpperCase() + '/' + tag + ':\t' + format].concat(
+            if (this.level >= Jogger.Level[type]) {
+                var matches = (new Error()).stack.split('\n')[3].match(/\(.*\/(.*):([0-9]+):[0-9]+\)/);
+                var file    = (matches && matches[1]) || '<unknown>';
+                var line    = (matches && matches[2]) || '?';
+
+                var args    = [this._now() + ' ' + file + ':' + line + ' ' + type.toUpperCase() + '/' + tag + ' ' + format].concat(
                     Array.prototype.slice.call(arguments, 3));
 
-                if (this.colorize)
-                {
-                    switch (type)
-                    {
-                        case 'e':
-                            args[0] = '\033[31m' + args[0] + '\033[0m'; // red
-                            break;
-                        case 'w':
-                            args[0] = '\033[33m' + args[0] + '\033[0m'; // yellow
-                            break;
-                        case 'i':
-                            args[0] = '\033[36m' + args[0] + '\033[0m'; // cyan
-                            break;
-                    }
-                }
+                if (this.outputs.length > 0) {
+                    var line = _format.apply(null, args);
 
-                (function () {
-                    switch (type)
-                    {
-                        case 'e':
-                            return console.error;
-                        case 'w':
-                            return console.warn;
-                        case 'i':
-                            return console.info;
-                        default:
-                            return console.log;
-                    }
-                })().apply(console, args);
+                    this.outputs.forEach(function (wstream) {
+                        if (wstream.isTTY
+                                && this.colorize && typeof Jogger.Color[type] !== 'undefined')
+                            wstream.write('\033[' + Jogger.Color[type] + 'm' + line + '\033[0m\n');
+                        else
+                            wstream.write(line + '\n');
+                    }, this);
+                } else if (typeof console !== 'undefined') {
+                    (function () {
+                        switch (type)
+                        {
+                            case 'e':
+                                return console.error;
+                            case 'w':
+                                return console.warn;
+                            case 'i':
+                                return console.info;
+                            default:
+                                return console.log;
+                        }
+                    })().apply(console, args);
+                }
             }
         }
 
