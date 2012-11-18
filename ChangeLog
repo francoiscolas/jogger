@@ -1,2 +1,6 @@
+2.0.0 - 2012-11-18
+	* Output to multiple streams (stdout by default).
+	* Add a filter attribute (applied on tags).
+	* Update level and filter attributes without stopping application.
 1.0.0 - 2012-09-13
 	* Initial release.
