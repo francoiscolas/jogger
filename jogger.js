@@ -48,6 +48,7 @@
 
         self.colorize = false;
         self.outputs  = [];
+        self.filter   = null;
         self.level    = Jogger.Level.d;
 
         if (typeof process !== 'undefined') {
@@ -109,39 +110,43 @@
         },
 
         _write: function (type, tag, format/*, arguments...*/) {
-            if (this.level >= Jogger.Level[type]) {
-                var matches = (new Error()).stack.split('\n')[3].match(/\(.*\/(.*):([0-9]+):[0-9]+\)/);
-                var file    = (matches && matches[1]) || '<unknown>';
-                var line    = (matches && matches[2]) || '?';
+            if (this.level < Jogger.Level[type])
+                return ;
 
-                var args    = [this._now() + ' ' + file + ':' + line + ' ' + type.toUpperCase() + '/' + tag + ' ' + format].concat(
-                    Array.prototype.slice.call(arguments, 3));
+            if (this.filter && !this.filter.test(tag))
+                return ;
 
-                if (this.outputs.length > 0) {
-                    var line = _format.apply(null, args);
+            var matches = (new Error()).stack.split('\n')[3].match(/\(.*\/(.*):([0-9]+):[0-9]+\)/);
+            var file    = (matches && matches[1]) || '<unknown>';
+            var line    = (matches && matches[2]) || '?';
 
-                    this.outputs.forEach(function (wstream) {
-                        if (wstream.isTTY
-                                && this.colorize && typeof Jogger.Color[type] !== 'undefined')
-                            wstream.write('\033[' + Jogger.Color[type] + 'm' + line + '\033[0m\n');
-                        else
-                            wstream.write(line + '\n');
-                    }, this);
-                } else if (typeof console !== 'undefined') {
-                    (function () {
-                        switch (type)
-                        {
-                            case 'e':
-                                return console.error;
-                            case 'w':
-                                return console.warn;
-                            case 'i':
-                                return console.info;
-                            default:
-                                return console.log;
-                        }
-                    })().apply(console, args);
-                }
+            var args    = [this._now() + ' ' + file + ':' + line + ' ' + type.toUpperCase() + '/' + tag + ' ' + format].concat(
+                Array.prototype.slice.call(arguments, 3));
+
+            if (this.outputs.length > 0) {
+                var line = _format.apply(null, args);
+
+                this.outputs.forEach(function (wstream) {
+                    if (wstream.isTTY
+                            && this.colorize && typeof Jogger.Color[type] !== 'undefined')
+                        wstream.write('\033[' + Jogger.Color[type] + 'm' + line + '\033[0m\n');
+                    else
+                        wstream.write(line + '\n');
+                }, this);
+            } else if (typeof console !== 'undefined') {
+                (function () {
+                    switch (type)
+                    {
+                        case 'e':
+                            return console.error;
+                        case 'w':
+                            return console.warn;
+                        case 'i':
+                            return console.info;
+                        default:
+                            return console.log;
+                    }
+                })().apply(console, args);
             }
         }
 
