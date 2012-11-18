@@ -1,7 +1,7 @@
 var Jogger = require('../jogger');
 var Log    = new Jogger();
 
-Log.e('Tag', 'Log.level=%d (displayed)', Log.level);
-Log.w('Tag', 'Log.level=%d (displayed)', Log.level);
-Log.i('Tag', 'Log.level=%d (displayed)', Log.level);
-Log.d('Tag', 'Log.level=%d (displayed)', Log.level);
+Log.e('Tag', '%s message', 'error');
+Log.w('Tag', '%s message', 'warning');
+Log.i('Tag', '%s message', 'info');
+Log.d('Tag', '%s message', 'debug');
