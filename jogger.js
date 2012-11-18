@@ -50,6 +50,7 @@
         self.outputs  = [];
         self.filter   = null;
         self.level    = Jogger.Level.d;
+        self.port     = 0;
 
         if (typeof process !== 'undefined') {
             self.colorize = process.stdout.isTTY;
@@ -62,6 +63,13 @@
         }
 
         _extend(self, options);
+
+        if (self.port > 0) {
+            self._server = require && require('net') && require('net').createServer(function () {
+                self._onConnection.apply(self, arguments);
+            });
+            self._server.listen(self.port, '127.0.0.1');
+        }
     };
 
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
@@ -148,6 +156,26 @@
                     }
                 })().apply(console, args);
             }
+        },
+
+        _onConnection: function (socket) {
+            var self = this;
+
+            socket.setEncoding('UTF-8');
+            socket.on('data', function (data) {
+                var cmd = data.trim().substring(0, data.indexOf(' '));
+                var arg = data.trim().substring(cmd.length + 1);
+
+                switch (cmd)
+                {
+                    case 'filter':
+                        self.filter = (arg) ? new RegExp(arg) : null;
+                    case 'level':
+                        if (typeof Jogger.Level[arg] !== 'undefined')
+                            self.level = Jogger.Level[arg];
+                        break;
+                }
+            });
         }
 
     };
