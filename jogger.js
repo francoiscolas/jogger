@@ -51,6 +51,7 @@
         self.filter   = null;
         self.level    = Jogger.Level.d;
         self.port     = 0;
+        self._class   = Jogger;
 
         if (typeof process !== 'undefined') {
             self.colorize = process.stdout.isTTY;
