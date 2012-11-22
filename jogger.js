@@ -128,7 +128,7 @@
             var file    = (matches && matches[1]) || '<unknown>';
             var line    = (matches && matches[2]) || '?';
 
-            var args    = [this._now() + ' ' + file + ':' + line + ' ' + type.toUpperCase() + '/' + tag + ' ' + format].concat(
+            var args    = [this._now() + ' ' + type.toUpperCase() + '/' + tag + ' ' + file + ':' + line + ' ' + format].concat(
                 Array.prototype.slice.call(arguments, 3));
 
             if (this.outputs.length > 0) {
