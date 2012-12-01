@@ -20,15 +20,15 @@ and Node.js applications.
 Installation
 ------------
 
-````bash
+```bash
 $ npm install jogger
-````
+```
 
 
 Usage
 -----
 
-````javascript
+```javascript
 var Jogger = require('../jogger.js');
 var Log    = new Jogger({
     colorize: false,            // color messages under Node.js if true
@@ -52,7 +52,7 @@ Log.level = Jogger.Level.d;
 
 // update the filter:
 Log.filter = new RegExp(/Tag/);
-````
+```
 
 
 Change level and filter attributes from outside
