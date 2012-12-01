@@ -125,7 +125,7 @@
             if (this.filter && !this.filter.test(tag))
                 return ;
 
-            var matches = (new Error()).stack.split('\n')[3].match(/\(.*\/(.*):([0-9]+):[0-9]+\)/);
+            var matches = (new Error()).stack.split('\n')[3].match(/.*\/(.*):([0-9]+):[0-9]+/);
             var file    = (matches && matches[1]) || '<unknown>';
             var line    = (matches && matches[2]) || '?';
 
